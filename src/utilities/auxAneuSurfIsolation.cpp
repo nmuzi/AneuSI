@@ -2023,9 +2023,9 @@ void AneurysmClip(vtkSmartPointer<vtkPolyData> clines, vtkSmartPointer<vtkPolyDa
             clean->GetOutput()->GetPoints()->GetPoint(i,refPt);
             vtkMath::Subtract(refPt,sCenter,ray);
             
-            dispPt[0] = refPt[0] + 0.1*ray[0];
-            dispPt[1] = refPt[1] + 0.1*ray[1];
-            dispPt[2] = refPt[2] + 0.1*ray[2];
+            dispPt[0] = refPt[0] + 0.15*ray[0];
+            dispPt[1] = refPt[1] + 0.15*ray[1];
+            dispPt[2] = refPt[2] + 0.15*ray[2];
             
             aneuboxPts->InsertNextPoint(dispPt);
         }
@@ -2055,7 +2055,8 @@ void AneurysmClip(vtkSmartPointer<vtkPolyData> clines, vtkSmartPointer<vtkPolyDa
         boxNormals->SplittingOff();
         boxNormals->ComputePointNormalsOn();
         boxNormals->ConsistencyOn();
-        boxNormals->FlipNormalsOn();        
+        boxNormals->AutoOrientNormalsOn();
+        //boxNormals->FlipNormalsOn();        
         boxNormals->NonManifoldTraversalOff();   
         boxNormals->SetOutputPointsPrecision(1);
         boxNormals->Update();        
