@@ -438,26 +438,26 @@ void FindLateralClipPoints(   bool verbose, bool linetype2, vtkSmartPointer<vtkP
     // -----------------------------------------------------
     // Variables 
     int     i, j;
-    int     iend, step;             // iterators
-    double  dist, sDist;            // Distance between points, and selected/reference distance. Used in multiple loops
-    int     line1Id;                // Selected "type 1" centerline        
-    double  x_n[3];                 // Line point coordinates and neck point coordinates    
-    double  x_p1n[3], x_p2n[3];     // neck "ends" coordinates, and auxiliary point coordinates
-    int     id1, id2;               // auxiliary Ids
-    int     p1cId, p2cId;           // Id of clipping "starting points"
-    double  x_p1c[3], x_p2c[3];     // Coordinates of clipping "starting points"
-    double  x_f[3],   x_p[3];       // "following" and "previous" point
-    double  distI;                  // Distance between F and P points
-    double  p1cRad, p2cRad;         // p1c and p2c radius     
-    double  diam;                   // vessel diameter
-    int     p1cPts, p2cPts;         // Number of p1c and p2c points
-    int     p1cTag, p2cTag;         // Tags for p1c and p2c
-    double  cRad, pRad;             // "potential" clip radius
+    int     iend, step;                 // iterators
+    double  dist, sDist;                // Distance between points, and selected/reference distance. Used in multiple loops
+    int     line1Id;                    // Selected "type 1" centerline
+    double  x_n[3];                     // Line point coordinates and neck point coordinates
+    int     id1, id2;                   // auxiliary Ids
+    double  x_p1cInit[3], x_p2cInit[3]; // Ids of starting points to measure clipFactor*distance
+    int     p1cId, p2cId;               // Id of clipping "starting points"
+    double  x_p1c[3], x_p2c[3];         // Coordinates of clipping "starting points"
+    double  x_f[3],   x_p[3];           // "following" and "previous" point
+    double  distI;                      // Distance between F and P points
+    double  p1cRad, p2cRad;             // p1c and p2c radius
+    double  diam;                       // vessel diameter
+    int     p1cPts, p2cPts;             // Number of p1c and p2c points
+    int     p1cTag, p2cTag;             // Tags for p1c and p2c
+    double  cRad, pRad;                 // "potential" clip radius
     double  area_ratio;
-    int     nearId;                 // Possible near point Id (group search)
-    double  nearPt[3];              // Possible near point coordinates (group search)
-    int     sel1Pts, sel2Pts;       // Number of selected points (p1cSelection and p2cSelection)
-    
+    int     nearId;                     // Possible near point Id (group search)
+    double  nearPt[3];                  // Possible near point coordinates (group search)
+    int     sel1Pts, sel2Pts;           // Number of selected points (p1cSelection and p2cSelection)
+
     vtkDataArray *radius;
     
     vtkSmartPointer<vtkPolyData>     lineData    = vtkSmartPointer<vtkPolyData>::New();        // Selected type 1 cline Pdt
@@ -520,9 +520,7 @@ void FindLateralClipPoints(   bool verbose, bool linetype2, vtkSmartPointer<vtkP
         id1 = MIN(tempId,id1);        
 
     }
-    
-    double x_p1cInit[3], x_p2cInit[3];
-    
+
     lineData->GetPoints()->GetPoint(id1,x_p1cInit);
     lineData->GetPoints()->GetPoint(id2,x_p2cInit);    
     
@@ -589,7 +587,7 @@ void FindLateralClipPoints(   bool verbose, bool linetype2, vtkSmartPointer<vtkP
                             x_p1c[2] = x_p[2];
                             step--;
                         }
-                        else if (distI >= clipFactor*diam)
+                        else if (distI > clipFactor*diam)
                         {
                             if ( step < 1 )
                             {
@@ -600,6 +598,7 @@ void FindLateralClipPoints(   bool verbose, bool linetype2, vtkSmartPointer<vtkP
                             {
                                 p1cList->InsertNextId(lineIds->GetId(step)); // Keep the global id
                                 p1clineMinId->InsertNextId(lineIds->GetId(0));
+
                                 iend = 1;
                             }
                         }               
@@ -666,7 +665,6 @@ void FindLateralClipPoints(   bool verbose, bool linetype2, vtkSmartPointer<vtkP
                             {
                                 p2cList->InsertNextId(lineIds->GetId(step)); // Keep the global id
                                 p2clineMaxId->InsertNextId(lineIds->GetId(lineData->GetNumberOfPoints()-1));
-                                
                                 iend=1;                
                             }
                         }
@@ -756,7 +754,7 @@ void FindLateralClipPoints(   bool verbose, bool linetype2, vtkSmartPointer<vtkP
         }
     }
     
-    // Now select only one for each group.     
+    // Now select only one for each group.
     // For p1c
     // Initialize variables
     int iter;
@@ -780,15 +778,15 @@ void FindLateralClipPoints(   bool verbose, bool linetype2, vtkSmartPointer<vtkP
                 p1cId = p1cList->GetId(i);
                 clines->GetPoint(p1cId,x_p1c);
                                 
-                dist = vtkMath::Distance2BetweenPoints(x_p1c,x_p1n); // Get distance to neck "end"
-                
+                dist = vtkMath::Distance2BetweenPoints(x_p1c,x_p1cInit); // Get distance to neck "end"
+
                 if ( dist > sDist )
                 {
                     sDist = dist;               // Keep the furthest point
                     id1 = p1cList->GetId(i);
                     minId = p1clineMinId->GetId(i);
                 }
-            }            
+            }
         }
     
         p1cSelection->InsertNextId(id1);
@@ -806,14 +804,13 @@ void FindLateralClipPoints(   bool verbose, bool linetype2, vtkSmartPointer<vtkP
         sDist = 0.0;
         dist  = 0.0;
         
-        for ( i=0; i<p2cList->GetNumberOfIds(); i++ ) 
+        for ( i=0; i<p2cList->GetNumberOfIds(); i++ )
         {
             if ( p2cGroups[i] == iter )
             {
                 p2cId = p2cList->GetId(i);
                 clines->GetPoint(p2cId,x_p2c);
-                
-                dist = vtkMath::Distance2BetweenPoints(x_p2c,x_p2n);
+                dist = vtkMath::Distance2BetweenPoints(x_p2c,x_p2cInit);
                 
                 if ( dist > sDist )
                 {
@@ -961,6 +958,7 @@ void FindLateralClipPoints(   bool verbose, bool linetype2, vtkSmartPointer<vtkP
             while (iend == 0)
             {
                 id2 = id1 + 1;
+
                 
                 clines->GetPoint(id1, x_p1);                
                 clines->GetPoint(id2, x_p2);
@@ -979,7 +977,7 @@ void FindLateralClipPoints(   bool verbose, bool linetype2, vtkSmartPointer<vtkP
             }
         }
     }
-    
+
     if (verbose == true)
     {        
         cout << "###################################" << endl;
@@ -1974,7 +1972,6 @@ void AneurysmClip(vtkSmartPointer<vtkPolyData> clines, vtkSmartPointer<vtkPolyDa
             ptId = topPts->GetId(i);
             botPts->InsertNextId(ptId + numPts);
         }
-         
         
         // Create polygons
         vtkSmartPointer<vtkCellArray> polys = vtkSmartPointer<vtkCellArray>::New();
@@ -2066,8 +2063,8 @@ void AneurysmClip(vtkSmartPointer<vtkPolyData> clines, vtkSmartPointer<vtkPolyDa
         boxWriter->SetInputData(boxNormals->GetOutput());
         boxWriter->SetFileName("clipBox.vtk");
         boxWriter->Write();
-        boxWriter->Update();  
-        
+        boxWriter->Update();
+
         // Implicit function that will be used to slice the mesh
         vtkNew<vtkImplicitPolyDataDistance> implicitPolyDataDistance;
         implicitPolyDataDistance->SetInput(boxNormals->GetOutput());
