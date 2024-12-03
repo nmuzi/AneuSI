@@ -1,8 +1,8 @@
-# AneuSurfIsolation - v1.0
+# AneuSI - v1.0
 
 ## Description
 
-AneuSurfIsolation is a command line tool for isolating the aneurysm dome and its neighboring vessels from the artery tree in 3D surfaces models of intracranial aneurysms. This tool receives the .vtk files corresponding to the surface model of the aneurysm, its centerlines and its neck polygon as inputs, and gives the isolated model surface as a .vtk PolyData file. 
+AneuSI (Aneurysm Surface Isolation) is a command line tool for isolating the aneurysm dome and its neighboring vessels from the artery tree in 3D surfaces models of intracranial aneurysms. This tool receives the .vtk files corresponding to the surface model of the aneurysm, its centerlines and its neck polygon as inputs, and gives the isolated model surface as a .vtk PolyData file. 
 
 The algorithm selects reference points for each branch of the artery, and calculates the isolation distance from those points as the product of the inner diameter of the blood vessel in those reference points and a user-defined factor named "clipFactor", that allows the user to control the length of the remaining vasculature connected to the aneurysm dome. Reference points are selected depending of the location of the vessel: if it branches before reaching the aneurysm neck, the point is selected immediately after the bifurcation, and if the vessel reaches the neck, the point is selected where the vessel touches the ostium.
 
@@ -16,13 +16,13 @@ Examples of the output can be found in the "examples" directory in the repositor
 
 ## Compilation and Installation
 
-This tool is meant to be compiled and installed by using CMake. We encourage the use of CMake gui. Before installing AneuSurfIsolation, remember to install VTK and to add local directory to your path.
+This tool is meant to be compiled and installed by using CMake. We encourage the use of CMake gui. Before installing AneuSI, remember to install VTK and to add local directory to your path.
 
 Procedure: 
 	
 	1) Inside the building directory, use cmake gui to open the configuration. 
 
-		ccmake ~/PATH_TO_FOLDER/AneuSurfIsolation/src
+		ccmake ~/PATH_TO_FOLDER/AneuSI/src
 
 	2) Set the variables:
 		
@@ -45,15 +45,15 @@ This tool requires the use of a configuration file (.cfg), which can be found in
 
 Once defined all paths and parameters in the .cfg file, the tool can be executed from the terminal as:
 
-	AneuSurfIsolation AneuConfigFile.cfg 
+	AneuSI AneuConfigFile.cfg 
 
-If the verbose parameter was set as "true", the tool will display some information about the process. AneuSurfIsolation was developed as a purely command line application, so it does not have a GUI. Nevertheless, setting the rendering parameter "true" will open a windows after the process showing the final result, in order to perform a "quick" visual check of the isolated model. 
+If the verbose parameter was set as "true", the tool will display some information about the process. AneuSI was developed as a purely command line application, so it does not have a GUI. Nevertheless, setting the rendering parameter "true" will open a windows after the process showing the final result, in order to perform a "quick" visual check of the isolated model. 
 
 ## Troubleshooting
 
 Software has been tested in Linux Debian 10-12 with VTK 8.2-9.0. Issues with other distributions or problems with the algorithm will be shown here. 
 
-Please, report issues or bugs to ________.
+Please, report issues or bugs to _______________.
 
 
 
